@@ -27,14 +27,11 @@ public class EventsourcingApplication {
 		SpringApplication.run(EventsourcingApplication.class, args);
 	}
 
-
-    @Scheduled(fixedRate = 2000)
-    public void randomCards() {
-        CreditCard card = new CreditCard(UUID.randomUUID());
-        card.assignLimit(BigDecimal.TEN);
-        creditCardRepository.save(card);
+	@Scheduled(fixedRate = 2000)
+    public void randomCard() {
+        CreditCard creditCard = new CreditCard(UUID.randomUUID());
+        creditCard.assignLimit(BigDecimal.TEN);
+        creditCardRepository.save(creditCard);
     }
-
-
 
 }
