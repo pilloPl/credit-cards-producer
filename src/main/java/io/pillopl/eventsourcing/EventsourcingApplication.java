@@ -24,10 +24,10 @@ public class EventsourcingApplication {
     }
 
     public static void main(String[] args) {
-		SpringApplication.run(EventsourcingApplication.class, args);
-	}
+        SpringApplication.run(EventsourcingApplication.class, args);
+    }
 
-	@Scheduled(fixedRate = 2000)
+    @Scheduled(fixedRate = 2000)
     public void randomCard() {
         CreditCard creditCard = new CreditCard(UUID.randomUUID());
         creditCard.assignLimit(BigDecimal.TEN);

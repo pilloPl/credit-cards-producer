@@ -43,7 +43,7 @@ public class CreditCard {
         return limit != null;
     }
 
-    void withdraw(BigDecimal amount) {
+    public void withdraw(BigDecimal amount) {
         if(notEnoughMoneyToWIthdraw(amount)) {
             throw new IllegalStateException();
         }
