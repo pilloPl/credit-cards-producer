@@ -31,6 +31,7 @@ public class EventsourcingApplication {
     public void randomCard() {
         CreditCard creditCard = new CreditCard(UUID.randomUUID());
         creditCard.assignLimit(BigDecimal.TEN);
+        creditCard.withdraw(BigDecimal.TEN);
         creditCardRepository.save(creditCard);
     }
 

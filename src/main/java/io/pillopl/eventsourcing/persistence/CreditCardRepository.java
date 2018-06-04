@@ -23,9 +23,15 @@ public class CreditCardRepository {
                 = eventStreams.getOrDefault(creditCard.getUuid(), new ArrayList<>());
         currentStream.addAll(creditCard.getPendingEvents());
         creditCard.getPendingEvents().forEach(event ->
-        source.output().send(new GenericMessage<>(event)));
+        source.output().send(new GenericMessage<>(event, headers(event))));
         eventStreams.put(creditCard.getUuid(), currentStream);
         creditCard.eventsFlushed();
+    }
+
+    private Map<String, Object> headers(DomainEvent event) {
+        Map<String, Object> headers = new HashMap<>();
+        headers.put("type", event.getType());
+        return headers;
     }
 
     public CreditCard load(UUID uuid) {
