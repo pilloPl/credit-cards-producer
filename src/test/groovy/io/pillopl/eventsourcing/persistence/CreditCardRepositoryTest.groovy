@@ -24,5 +24,6 @@ class CreditCardRepositoryTest extends Specification {
             CreditCard loaded = creditCardRepository.load(uuid)
         then:
             loaded.availableLimit() == 90
+            loaded.getPendingEvents().size() == 0
     }
 }
