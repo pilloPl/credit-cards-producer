@@ -29,10 +29,7 @@ public class CreditCard {
             throw new IllegalStateException(); //nack
         }
         //ack
-        LimitAssigned event = new LimitAssigned(uuid, amount, Instant.now());
-        limitAssigned(event);
-        pendingEvents.add(event);
-
+        this.handleWithAppend(new LimitAssigned(uuid, amount, Instant.now()));
     }
 
     private CreditCard limitAssigned(LimitAssigned event) {
@@ -52,9 +49,7 @@ public class CreditCard {
         if(tooManyWithdrawalsInCycle()) {
             throw new IllegalStateException();
         }
-        CardWithdrawn event = new CardWithdrawn(uuid, amount, Instant.now());
-        cardWithdrawn(event);
-        this.pendingEvents.add(event);
+        this.handleWithAppend(new CardWithdrawn(uuid, amount, Instant.now()));
     }
 
     private CreditCard cardWithdrawn(CardWithdrawn event) {
@@ -72,9 +67,7 @@ public class CreditCard {
     }
 
     void repay(BigDecimal amount) {
-        CardRepaid event = new CardRepaid(uuid, amount, Instant.now());
-        cardRepaid(event);
-        pendingEvents.add(event);
+        this.handleWithAppend(new CardRepaid(uuid, amount, Instant.now()));
     }
 
     private CreditCard cardRepaid(CardRepaid event) {
@@ -83,9 +76,7 @@ public class CreditCard {
     }
 
     void billingCycleClosed() {
-        CycleClosed event = new CycleClosed(uuid, Instant.now());
-        cycleClosed(event);
-        pendingEvents.add(event);
+        this.handleWithAppend(new CycleClosed(uuid, Instant.now()));
     }
 
     private CreditCard cycleClosed(CycleClosed event) {
@@ -112,6 +103,11 @@ public class CreditCard {
 
     public static CreditCard recreateFrom(UUID uuid, List<DomainEvent> events) {
         return ofAll(events).foldLeft(new CreditCard(uuid), CreditCard::handle);
+    }
+
+    private CreditCard handleWithAppend(DomainEvent event) {
+        this.pendingEvents.add(event);
+        return this.handle(event);
     }
 
     private CreditCard handle(DomainEvent event) {
