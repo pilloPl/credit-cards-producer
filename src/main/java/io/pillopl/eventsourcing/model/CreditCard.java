@@ -29,13 +29,11 @@ public class CreditCard {
             throw new IllegalStateException(); //nack
         }
         //ack
-        limitAssigned(new LimitAssigned(uuid, amount, Instant.now()));
-
+        this.handleWithAppend(new LimitAssigned(uuid, amount, Instant.now()));
     }
 
     private CreditCard limitAssigned(LimitAssigned event) {
         this.limit = event.getAmount();
-        pendingEvents.add(event);
         return this;
     }
 
@@ -51,14 +49,12 @@ public class CreditCard {
         if(tooManyWithdrawalsInCycle()) {
             throw new IllegalStateException();
         }
-        cardWithdrawn(new CardWithdrawn(uuid, amount, Instant.now()));
-
+        this.handleWithAppend(new CardWithdrawn(uuid, amount, Instant.now()));
     }
 
     private CreditCard cardWithdrawn(CardWithdrawn event) {
         this.usedLimit = usedLimit.add(event.getAmount());
         this.withdrawals++;
-        pendingEvents.add(event);
         return this;
     }
 
@@ -71,22 +67,20 @@ public class CreditCard {
     }
 
     void repay(BigDecimal amount) {
-        cardRepaid(new CardRepaid(uuid, amount, Instant.now()));
+        this.handleWithAppend(new CardRepaid(uuid, amount, Instant.now()));
     }
 
     private CreditCard cardRepaid(CardRepaid event) {
         usedLimit = usedLimit.subtract(event.getAmount());
-        pendingEvents.add(event);
         return this;
     }
 
     void billingCycleClosed() {
-        cycleClosed(new CycleClosed(uuid, Instant.now()));
+        this.handleWithAppend(new CycleClosed(uuid, Instant.now()));
     }
 
     private CreditCard cycleClosed(CycleClosed event) {
         withdrawals = 0;
-        pendingEvents.add(event);
         return this;
     }
 
@@ -109,6 +103,11 @@ public class CreditCard {
 
     public static CreditCard recreateFrom(UUID uuid, List<DomainEvent> events) {
         return ofAll(events).foldLeft(new CreditCard(uuid), CreditCard::handle);
+    }
+
+    private CreditCard handleWithAppend(DomainEvent event) {
+        this.pendingEvents.add(event);
+        return this.handle(event);
     }
 
     private CreditCard handle(DomainEvent event) {
